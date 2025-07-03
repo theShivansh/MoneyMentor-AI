@@ -5,7 +5,7 @@ from groq import Groq
 
 # Set page configuration
 st.set_page_config(
-    page_title="Personal Finance Tip Generator",
+    page_title="MoneyMentor AI",
     page_icon="💰",
     layout="centered",
     initial_sidebar_state="expanded"
@@ -63,7 +63,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # App title
-st.title("💰 Personal Finance Tip Generator")
+st.title("💰 MoneyMentor AI")
 st.markdown("Get personalized financial advice based on your income, expenses, and savings goals.")
 st.markdown("---")
 
