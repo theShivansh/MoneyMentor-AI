@@ -27,16 +27,16 @@ A Streamlit-powered Gen AI tool that gives you actionable, AI-generated personal
 *Easily input your monthly income, expenses, and savings goals.*
 
 ---
-
-### 🧠 Personalized AI Tips  
-![AI Tips](screenshots/generated-tips.png)  
-*Get instant financial advice powered by Gen AI + smart logic.*
-
----
-
 ### 📊 Financial Summary & Pie Chart  
 ![Pie Chart](screenshots/summary-chart.png)  
 *Visual breakdown of where your money is going each month.*
+
+---
+
+### 🧠 Personalized AI Tips  
+![AI Tips](screenshots/generated-tips.png)  
+![AI Tips](screenshots/Personalized-AI-Tip.png)  
+*Get instant financial advice powered by Gen AI + smart logic.*
 
 ---
 
