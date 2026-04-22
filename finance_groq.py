@@ -8,6 +8,8 @@ import streamlit as st
 import plotly.graph_objects as go
 import json, time, urllib.parse, urllib.request, re, concurrent.futures
 from typing import TypedDict, List, Dict, Any, Optional
+import threading
+from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 
 # ─── LangGraph ────────────────────────────────────────────────────────────────
 try:
@@ -583,71 +585,39 @@ def agent_supervisor(state: AgentState, client: Groq) -> str:
 # PARALLEL EXECUTION ENGINE  (ThreadPoolExecutor — fixes the LangGraph stream bug)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def run_parallel_agents(
-    state: AgentState,
-    client: Groq,
-    status_slots: Dict[str, Any],
-    progress_bar: Any,
-) -> AgentState:
-    """
-    Runs Budget, Risk, Investment, Web agents in TRUE parallel via ThreadPool,
-    then feeds all outputs to Supervisor sequentially.
-    No LangGraph stream unpacking — avoids 'too many values to unpack' error.
-    """
-
-    completed = [0]   # mutable counter for progress updates
+def run_parallel_agents(state: AgentState, client: Groq, status_slots: Dict[str, Any], progress_bar: Any) -> AgentState:
+    completed = [0]
+    ctx = get_script_run_ctx()
 
     def _run(name: str, fn, *args):
-        status_slots[name].markdown(
-            f'<div class="flow-step active"><span class="sdot"></span>{name.title()} Agent · Running…</div>',
-            unsafe_allow_html=True)
+        add_script_run_ctx(threading.current_thread(), ctx)
+        status_slots[name].markdown(f'<div class="flow-step active"><span class="sdot"></span>{name.title()} Agent · Running…</div>', unsafe_allow_html=True)
         result = fn(*args)
         completed[0] += 1
         progress_bar.progress(min(0.8, completed[0] / 4 * 0.8))
-        status_slots[name].markdown(
-            f'<div class="flow-step active" style="color:var(--a2)">✓ {name.title()} Agent · Done</div>',
-            unsafe_allow_html=True)
+        status_slots[name].markdown(f'<div class="flow-step active" style="color:var(--a2)">✓ {name.title()} Agent · Done</div>', unsafe_allow_html=True)
         return result
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:
-        f_budget  = ex.submit(_run, "budget",     agent_budget,         state, client)
-        f_risk    = ex.submit(_run, "risk",        agent_risk,           state, client)
-        f_invest  = ex.submit(_run, "investment",  agent_investment,     state, client)
-        f_web     = ex.submit(_run, "web",         agent_web_research,   state, client)
+        f_budget = ex.submit(_run, "budget", agent_budget, state, client)
+        f_risk = ex.submit(_run, "risk", agent_risk, state, client)
+        f_invest = ex.submit(_run, "investment", agent_investment, state, client)
+        f_web = ex.submit(_run, "web", agent_web_research, state, client)
 
-        budget_out     = f_budget.result()
-        risk_out       = f_risk.result()
+        budget_out = f_budget.result()
+        risk_out = f_risk.result()
         investment_out = f_invest.result()
         web_out, web_raw = f_web.result()
 
-    # Merge parallel outputs into state
-    state = {**state,
-             "budget_analysis":   budget_out,
-             "risk_assessment":   risk_out,
-             "investment_advice": investment_out,
-             "web_insights":      web_out,
-             "web_raw":           web_raw}
+    state = {**state, "budget_analysis": budget_out, "risk_assessment": risk_out, "investment_advice": investment_out, "web_insights": web_out, "web_raw": web_raw}
 
-    # Supervisor — must run after all 4 complete
     progress_bar.progress(0.85)
-    status_slots["supervisor"].markdown(
-        '<div class="flow-step active"><span class="sdot"></span>Supervisor CFO · Synthesising…</div>',
-        unsafe_allow_html=True)
+    status_slots["supervisor"].markdown('<div class="flow-step active"><span class="sdot"></span>Supervisor CFO · Synthesising…</div>', unsafe_allow_html=True)
     final = agent_supervisor(state, client)
     progress_bar.progress(1.0)
-    status_slots["supervisor"].markdown(
-        '<div class="flow-step active" style="color:var(--a2)">✓ Supervisor CFO · Plan Ready</div>',
-        unsafe_allow_html=True)
+    status_slots["supervisor"].markdown('<div class="flow-step active" style="color:var(--a2)">✓ Supervisor CFO · Plan Ready</div>', unsafe_allow_html=True)
 
-    return {**state,
-            "final_report": final,
-            "messages": [
-                {"role": "budget_analyst",    "content": budget_out},
-                {"role": "risk_assessor",     "content": risk_out},
-                {"role": "investment_advisor","content": investment_out},
-                {"role": "web_researcher",    "content": web_out},
-                {"role": "supervisor",        "content": final},
-            ]}
+    return {**state, "final_report": final, "messages": [{"role": "budget_analyst", "content": budget_out}, {"role": "risk_assessor", "content": risk_out}, {"role": "investment_advisor", "content": investment_out}, {"role": "web_researcher", "content": web_out}, {"role": "supervisor", "content": final}]}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
