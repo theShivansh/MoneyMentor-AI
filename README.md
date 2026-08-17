@@ -87,7 +87,7 @@ MoneyMentor AI is a **full-stack AI engineering project** that simulates a perso
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     SUPERVISOR CFO                                  │
 │              deepseek-r1-distill-llama-70b                          │
-│     → fallback: llama-3.3-70b-versatile                            │
+│     → fallback: qwen/qwen3.6-27b                            │
 │                                                                     │
 │  Synthesises all 4 reports → 30 / 60 / 90-Day Execution Plan       │
 │  Payload-trimmed (280 chars/agent) to prevent 413 overflows         │
@@ -126,17 +126,17 @@ llama-3.3-70b synthesises answer
 ## 🤖 Agent Intelligence Layer
 
 ### Agent 1 — Budget Analyst
-**Model:** `llama-3.3-70b-versatile`
+**Model:** `qwen/qwen3.6-27b`
 
 Performs 50/30/20 rule decomposition with category-level anomaly detection. The prompt is engineered to produce **exactly 4 numbered, Rs-denominated insights** with no preamble — output is deterministic in structure, enabling reliable UI rendering. Needs/wants classification uses a case-insensitive keyword matcher against Indian household expense categories.
 
 ### Agent 2 — Risk Assessor
-**Model:** `llama-3.3-70b-versatile`
+**Model:** `qwen/qwen3.6-27b`
 
 Computes emergency runway (`savings ÷ monthly_burn`), 6-month fund gap, expense-to-income ratio, and goal monthly requirement vs available surplus. Prompt enforces strict output format (`RISK LEVEL:` header + 3 numbered vulnerabilities + `IMMEDIATE FIX:`) — no tools used, ensuring content is never `None`.
 
 ### Agent 3 — Investment Advisor
-**Model:** `llama-3.3-70b-versatile`
+**Model:** `qwen/qwen3.6-27b`
 
 India-specific portfolio construction against real investable surplus. System prompt specifies allocation format verbatim: `[Instrument] — [Fund Name] — Rs[X]/mo ([Y]%) — [reason]`. Forces naming real SEBI-registered AMCs (Mirae Asset, Quant MF, Motilal Oswal, SBI, HDFC) rather than generic placeholders. Ends with 12-month and 3-year corpus projections.
 
@@ -146,12 +146,12 @@ India-specific portfolio construction against real investable surplus. System pr
 Payload is intentionally minimal (system: 1 sentence, user: 4 bullet points) to avoid the **413 Request Entity Too Large** error that compound-beta triggers with verbose prompts. Returns live RBI rates, SIP performance, CPI, and liquid fund yields with citations. Falls back to DuckDuckGo + curated KB on failure.
 
 ### Agent 5 — Supervisor CFO
-**Model:** `deepseek-r1-distill-llama-70b` → `llama-3.3-70b-versatile`
+**Model:** `deepseek-r1-distill-llama-70b` → `qwen/qwen3.6-27b`
 
 Synthesises all 4 agent outputs. Each sub-report is hard-capped to 280 characters (`_cap()` helper) before being included in the supervisor prompt — this keeps the total token count well within limits while preserving the key insight from each agent. Outputs a structured 30/60/90-day plan with bold formatting applied at render time.
 
 ### Agent 6 — Chat Advisor
-**Model:** `meta-llama/llama-4-scout-17b-16e-instruct`
+**Model:** `qwen/qwen3.6-27b`
 
 Multi-turn conversational advisor with rolling 10-message history. System prompt is dynamically constructed with live financial context (income, expenses, agent analysis snapshot). Responds in max 4 sentences with an emoji lead and Rs-denominated advice.
 
@@ -314,17 +314,17 @@ No Streamlit globals are accessed from worker threads — a common mistake that 
 
 ```python
 MODELS = {
-    "budget":     "llama-3.3-70b-versatile",          # Rich CoT, reliable text
-    "risk":       "llama-3.3-70b-versatile",          # Structured format output
-    "investment": "llama-3.3-70b-versatile",          # Domain knowledge depth
+    "budget":     "qwen/qwen3.6-27b",          # Rich CoT, reliable text
+    "risk":       "qwen/qwen3.6-27b",          # Structured format output
+    "investment": "qwen/qwen3.6-27b",          # Domain knowledge depth
     "research":   "compound-beta",                    # Native agentic web search
     "supervisor": "deepseek-r1-distill-llama-70b",   # Chain-of-thought reasoning
-    "chat":       "meta-llama/llama-4-scout-17b-16e-instruct",  # Fast multi-turn
+    "chat":       "qwen/qwen3.6-27b",  # Fast multi-turn
 }
 ```
 
 **Why these models?**
-- `llama-3.3-70b-versatile` — Best balance of instruction-following and domain knowledge on Groq's free tier; produces structured, Rs-denominated output reliably
+- `qwen/qwen3.6-27b` — Best balance of instruction-following and domain knowledge on Groq's free tier; produces structured, Rs-denominated output reliably
 - `compound-beta` — Groq's only model with **native tool-use web search**; no API keys needed for live data
 - `deepseek-r1-distill-llama-70b` — Chain-of-thought reasoning for synthesis tasks; produces more coherent multi-step plans than instruction-tuned models
 - `llama-4-scout-17b` — Optimised for short, snappy responses; ideal for chat where latency matters

@@ -42,19 +42,19 @@ st.set_page_config(
 # ══════════════════════════════════════════════════════════════════════════
 MODELS: Dict[str, str] = {
     # Budget Analyst — deep 50/30/20 CoT reasoning + anomaly detection
-    "budget":     "llama-3.3-70b-versatile",
+    "budget":     "qwen/qwen3.6-27b",
     # Risk Assessor — fast multi-dimensional risk scoring
-    "risk":       "llama-3.3-70b-versatile",
+    "risk":       "qwen/qwen3.6-27b",
     # Investment Advisor — Indian market expertise: ELSS, SIP, NPS, PPF
-    "investment": "llama-3.3-70b-versatile",
+    "investment": "qwen/qwen3.6-27b",
     # Web Researcher — Groq Compound-Beta: native agentic web search
     "research":   "compound-beta",
     # Supervisor CFO — deepseek-r1 synthesis with strong reasoning
     "supervisor": "deepseek-r1-distill-llama-70b",
     # Chat Advisor — Llama 4 Scout: snappy context-aware multi-turn chat
-    "chat":       "meta-llama/llama-4-scout-17b-16e-instruct",
+    "chat":       "qwen/qwen3.6-27b",
 }
-_SUPERVISOR_FALLBACK = "llama-3.3-70b-versatile"
+_SUPERVISOR_FALLBACK = "qwen/qwen3.6-27b"
 # Model display names shown in the UI
 MODEL_DISPLAY: Dict[str, str] = {
     "budget":     "llama-3.3-70b",
@@ -857,7 +857,7 @@ class AgentState(TypedDict):
 # ══════════════════════════════════════════════════════════════════════════
 
 def _budget_agent(s: AgentState, c: Groq) -> str:
-    """Agent 1 — Budget Analyst: llama-3.3-70b-versatile"""
+    """Agent 1 — Budget Analyst: qwen/qwen3.6-27b"""
     total = sum(s["expenses"].values())
     net   = s["income"] - total
     sr    = net / s["income"] * 100 if s["income"] > 0 else 0
@@ -889,7 +889,7 @@ def _budget_agent(s: AgentState, c: Groq) -> str:
 
 
 def _risk_agent(s: AgentState, c: Groq) -> str:
-    """Agent 2 — Risk Assessor: llama-3.3-70b-versatile"""
+    """Agent 2 — Risk Assessor: qwen/qwen3.6-27b"""
     total  = sum(s["expenses"].values())
     runway = round(s["savings"] / total, 1) if total > 0 else 0
     er     = round(total / s["income"] * 100, 1) if s["income"] > 0 else 0
@@ -921,7 +921,7 @@ def _risk_agent(s: AgentState, c: Groq) -> str:
 
 
 def _investment_agent(s: AgentState, c: Groq) -> str:
-    """Agent 3 — Investment Advisor: llama-3.3-70b-versatile"""
+    """Agent 3 — Investment Advisor: qwen/qwen3.6-27b"""
     total      = sum(s["expenses"].values())
     investable = max(0, s["income"] - total)
     tgt        = s.get("target") or 0
@@ -1013,7 +1013,7 @@ def _web_agent(s: AgentState, c: Groq) -> Tuple[str, List[Dict]]:
             f"Data:\n{ctx}"
         )
         ans = _call(c, fallback_sys, fallback_user,
-                    model="llama-3.3-70b-versatile", max_tokens=550)
+                    model="qwen/qwen3.6-27b", max_tokens=550)
         return ans, raw
 
 
@@ -1708,9 +1708,9 @@ def main() -> None:
                     unsafe_allow_html=True)
 
         roster = [
-            ("◈ Budget Analyst",     "llama-3.3-70b-versatile",          "50/30/20 CoT math + anomaly flags"),
+            ("◈ Budget Analyst",     "qwen/qwen3.6-27b",          "50/30/20 CoT math + anomaly flags"),
             ("◈ Risk Assessor",      "llama-4-scout-17b-16e",            "CRITICAL→LOW scoring + goal gap"),
-            ("◈ Investment Advisor", "llama-3.3-70b-versatile",          "SEBI instruments + SIP allocation"),
+            ("◈ Investment Advisor", "qwen/qwen3.6-27b",          "SEBI instruments + SIP allocation"),
             ("◈ Web Researcher",     "compound-beta (native search)",     "Live RBI · CPI · market data"),
             ("◈ Supervisor CFO",     "gpt-oss-120b → 70B fallback",      "30/60/90-day plan synthesis"),
             ("◈ Chat Advisor",       "llama-4-scout-17b-16e",            "Context-aware multi-turn Q&A"),
@@ -2549,7 +2549,7 @@ def main() -> None:
                                 "numbered, actionable answer. Use Rs signs."
                             ),
                             f"Topic: {topic}\n\nIndia Finance Data:\n{combined}",
-                            model="llama-3.3-70b-versatile", max_tokens=550,
+                            model="qwen/qwen3.6-27b", max_tokens=550,
                         )
 
                 st.session_state.market_data    = mkt_data
