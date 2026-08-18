@@ -42,17 +42,17 @@ st.set_page_config(
 # ══════════════════════════════════════════════════════════════════════════
 MODELS: Dict[str, str] = {
     # Budget Analyst — deep 50/30/20 CoT reasoning + anomaly detection
-    "budget":     "qwen/qwen3.6-27b",
+    "budget":     "openai/gpt-oss-120b",
     # Risk Assessor — fast multi-dimensional risk scoring
-    "risk":       "qwen/qwen3.6-27b",
+    "risk":       "openai/gpt-oss-120b",
     # Investment Advisor — Indian market expertise: ELSS, SIP, NPS, PPF
-    "investment": "qwen/qwen3.6-27b",
+    "investment": "openai/gpt-oss-120b",
     # Web Researcher — Groq Compound-Beta: native agentic web search
     "research":   "compound-beta",
     # Supervisor CFO — deepseek-r1 synthesis with strong reasoning
     "supervisor": "deepseek-r1-distill-llama-70b",
     # Chat Advisor — Llama 4 Scout: snappy context-aware multi-turn chat
-    "chat":       "qwen/qwen3.6-27b",
+    "chat":       "openai/gpt-oss-120b",
 }
 _SUPERVISOR_FALLBACK = "qwen/qwen3.6-27b"
 # Model display names shown in the UI
@@ -1013,7 +1013,7 @@ def _web_agent(s: AgentState, c: Groq) -> Tuple[str, List[Dict]]:
             f"Data:\n{ctx}"
         )
         ans = _call(c, fallback_sys, fallback_user,
-                    model="qwen/qwen3.6-27b", max_tokens=550)
+                    model="openai/gpt-oss-120b", max_tokens=550)
         return ans, raw
 
 
@@ -1708,7 +1708,7 @@ def main() -> None:
                     unsafe_allow_html=True)
 
         roster = [
-            ("◈ Budget Analyst",     "qwen/qwen3.6-27b",          "50/30/20 CoT math + anomaly flags"),
+            ("◈ Budget Analyst",     "openai/gpt-oss-120b",          "50/30/20 CoT math + anomaly flags"),
             ("◈ Risk Assessor",      "llama-4-scout-17b-16e",            "CRITICAL→LOW scoring + goal gap"),
             ("◈ Investment Advisor", "qwen/qwen3.6-27b",          "SEBI instruments + SIP allocation"),
             ("◈ Web Researcher",     "compound-beta (native search)",     "Live RBI · CPI · market data"),
@@ -2549,7 +2549,7 @@ def main() -> None:
                                 "numbered, actionable answer. Use Rs signs."
                             ),
                             f"Topic: {topic}\n\nIndia Finance Data:\n{combined}",
-                            model="qwen/qwen3.6-27b", max_tokens=550,
+                            model="openai/gpt-oss-120b", max_tokens=550,
                         )
 
                 st.session_state.market_data    = mkt_data
