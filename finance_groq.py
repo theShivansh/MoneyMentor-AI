@@ -1729,7 +1729,7 @@ def main() -> None:
             )
 
         st.markdown("---")
-        lg = "✅ LangGraph 1.x" if _LG_AVAILABLE else "⚡ ThreadPool mode"
+        lg = "LangGraph 1.x" if _LG_AVAILABLE else "⚡ ThreadPool mode"
         st.markdown(
             f'<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;'
             f'color:var(--ts);letter-spacing:.05em;line-height:2.1;">'
